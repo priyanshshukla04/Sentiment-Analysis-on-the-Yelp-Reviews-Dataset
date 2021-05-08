@@ -1,3 +1,4 @@
+#(1) Importing modules
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,4 +13,105 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score, roc_curve
 from sklearn.grid_search import GridSearchCV
 
-#Incomplete
+
+#(2). Loading 
+data = pd.read_csv('input/yelp.csv')
+
+
+(3) Adding column
+data['length'] = data['text'].apply(len)
+data.head()
+
+
+#(4). Visualization:
+# COMPARING TEXT LENGTH TO STARS
+graph = sns.FacetGrid(data=data,col='stars')
+graph.map(plt.hist,'length',bins=50,color='blue')
+
+#(5). Mean Value of the Vote columns There are 3 voting columns for the reviews - funny, cool and useful. Let us now find the mean values with respect to the stars given to the review.
+mean_val = data.groupby('stars').mean()
+mean_val
+
+# GETTING THE MEAN VALUES OF THE VOTE COLUMNS WRT THE STARS ON THE REVIEW
+stval = data.groupby('stars').mean()
+stval
+
+(7). Classifying the dataset and splitting it into the reviews and stars:
+
+# CLASSIFICATION
+data_classes = data[(data['stars']==1) | (data['stars']==3) | (data['stars']==5)]
+data_classes.head()
+print(data_classes.shape)
+
+# Seperate the dataset into X and Y for prediction
+x = data_classes['text']
+y = data_classes['stars']
+print(x.head())
+print(y.head())
+
+
+(8). Data Cleaning:
+
+
+def text_process(text):
+    no = [char for char in text if char not in string.punctuation]
+    no = ''.join(no)
+    return [word for word in no.split() if word.lower() not in stopwords.words('english')]
+    
+
+(9). Vectorization
+
+vo = CountVectorizer(analyzer=text_process).fit(x)
+print(len(vo.vocabulary_))
+r = x[0]
+print(r)
+vocab0 = vocab.transform([r])
+print(vo)
+print("Getting the words back:")
+print(vo.get_feature_names()[19648])
+print(vo.get_feature_names()[10643])
+
+
+
+(12). Modelling:
+
+# Multinomial Naive Bayes
+from sklearn.naive_bayes import MultinomialNB
+mnb = MultinomialNB()
+mnb.fit(x_train,y_train)
+predmnb = mnb.predict(x_test)
+print("Confusion Matrix for Multinomial Naive Bayes:")
+print(confusion_matrix(y_test,predmnb))
+print("Score:",round(accuracy_score(y_test,predmnb)*100,2))
+print("Classification Report:",classification_report(y_test,predmnb))
+
+
+# POSITIVE REVIEW
+pr = data['text'][0]
+print(pr)
+print("Actual Rating: ",data['stars'][0])
+pr_t = vocab.transform([pr])
+print("Predicted Rating:")
+mlp.predict(pr_t)[0]
+
+
+# AVERAGE REVIEW
+ar = data['text'][16]
+print(ar)
+print("Actual Rating: ",data['stars'][16])
+ar_t = vocab.transform([ar])
+print("Predicted Rating:")
+mlp.predict(ar_t)[0]
+
+
+# NEGATIVE REVIEW
+nr = data['text'][16]
+print(nr)
+print("Actual Rating: ",data['stars'][23])
+nr_t = vocab.transform([nr])
+print("Predicted Rating:")
+mlp.predict(nr_t)[0]
+
+
+count = data['stars'].value_counts()
+print(count)
